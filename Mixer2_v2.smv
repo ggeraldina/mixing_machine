@@ -1,0 +1,360 @@
+module timer(){
+  I : 0..1; /* vhod */
+  Q : 0..1; /* vykhod */
+  init(I) := 0; init(Q) := 0; /* inicializatsiya */
+  next(Q) := next(I) & I & (Q | {0, 1}); /* novoe znacheniye vykhoda s isklyucheniem srabatyvaniya srazu zhe pri aktivatsiyi */
+  FAIRNESS I -> Q; /* chestnoye srabativaniye taimera */
+}
+
+module main(){
+  /* Opisaniye peremennih */ /* 13 vkhodov na 24 vykhoda */
+ 
+  /* Knopki Push Buttons */
+  PBStart: 0..1; /* Knopka Pusk */
+  PBStop: 0..1; /* Knopka Stop */
+  PBCompletion: 0..1; /* Knopka Zaversheniye raboty */
+ 
+  /* Knopki-perekluchateli Switch Buttons */
+  SBEmergencyValve: 0..1; /* Perekluchatel Otkryt' avariyniy klapan */
+
+  /* Datchiki Sensors */
+  STank1_0: 0..1; /* datchik urovnya 0 baka 1 */
+  STank1_1: 0..1; /* datchik urovnya 1 baka 1 */
+  STank2_0: 0..1; /* datchik urovnya 0 baka 2 */
+  STank2_1: 0..1; /* datchik urovnya 1 baka 2 */
+  STank_0: 0..1; /* datchik urovnya 0 rezervuara */
+  SActuatorMixer: 0..1; /* datchik raboty privoda meshalki */
+  SUpperTemperature: 0..1; /* datchik verkhney temperatury nagrevatelya */
+  SLowerTemperature: 0..1; /* datchik nizhney temperatury nagrevatelya */
+  SWorkingTemperature: 0..1; /* datchik rabochey temperatury nagrevatelya */
+
+  /* Vikhody */
+  /* Ustroystva/Lampy */
+  Heater: 0..1; /* vklyuchit nagrevatel */
+  UpperValveTank1: 0..1; /* otkrit podayushiy klapan 1 */
+  UpperValveTank2: 0..1; /* otkrit podayushiy klapan 2 */
+  LowerValveTank1: 0..1; /* otkrit nalivnoy klapan 1 */
+  LowerValveTank2: 0..1; /* otkrit nalivnoy klapan 2 */
+  EmergencyValve: 0..1; /* otkrit avariyniy klapan */
+  PourValve: 0..1; /* otkrit razlivnoy klapan */
+  ActuatorMixer: 0..1; /* zapustit privod meshalki */
+
+  /* Sostoyaniya/Lampy */
+  SystemOn: 0..1; /* sistema vklyuchena */
+  Completion: 0..1; /* rezhim plavnogo zaversheniya */
+  MixtureFinished: 0..1; /* smes prigotovlena */
+  MixtureBad: 0..1; /* smes isporchena */
+  Component1: 0..1; /* v smesi yest component 1 */
+  Component2: 0..1; /* v smesi yest component 2 */
+  HeaterError: 0..1; /* signal oshibki nagrevatelya */
+  MixerError: 0..1; /* signal oshibki privoda meshalki */
+
+  /* Lamp */
+  LampTank1_0: 0..1; /* lampa urovnya 0 baka 1 */
+  LampTank1_1: 0..1; /* lampa urovnya 1 baka 1 */
+  LampTank2_0: 0..1; /* lampa urovnya 0 baka 2 */
+  LampTank2_1: 0..1; /* lampa urovnya 1 baka 2 */
+  LampMixer: 0..1; /* lampa datchika raboty privoda meshalki */
+  LampUpperTemperature: 0..1; /* lampa datchika verkhney temperatury nagrevatelya */
+  LampLowerTemperature: 0..1; /* lampa datchika nizhney temperatury nagrevatelya */
+  LampWorkingTemperature: 0..1; /* lampa datchika rabochey temperatury nagrevatelya */
+
+  /* Vnutrennie i taimery */
+  Final: 0..1; /* priznak plavnogo zaversheniya raboty */
+  IntoTank1: 0..1; /* rezhim napolneniya baka 1 */
+  IntoTank2: 0..1; /* rezhim napolneniya baka 2 */
+  FromTank1: 0..1; /* rezhim podachi komponenta iz baka 1 */
+  FromTank2: 0..1; /* rezhim podachi komponenta iz baka 2 */
+  WaitingMixerTimer: timer; /* taimer ozhidaniya zapuska meshalki */
+  MixerTimer: timer; /* taimer raboty meshalki */
+  HeaterTimer: timer; /* taimer ozhidaniya nagreva */  
+
+  /* Razdel initsializatsiyi */
+  /* Knopki Push Buttons */
+  init(PBStart) := 0; /* Knopka Pusk */
+  init(PBStop) := 0; /* Knopka Stop */
+  init(PBCompletion) := 0; /* Knopka Zaversheniye raboty */
+ 
+  /* Knopki-perekluchateli Switch Buttons */
+  init(SBEmergencyValve) := 0; /* Perekluchatel Otkryt' avariyniy klapan */
+
+  /* Datchiki Sensors */
+  init(STank1_0) := 0; /* datchik urovnya 0 baka 1 */
+  init(STank1_1) := 0; /* datchik urovnya 1 baka 1 */
+  init(STank2_0) := 0; /* datchik urovnya 0 baka 2 */
+  init(STank2_1) := 0; /* datchik urovnya 1 baka 2 */
+  init(STank_0) := 0; /* datchik urovnya 0 rezervuara */
+  init(SActuatorMixer) := 0; /* datchik raboty privoda meshalki */
+  init(SUpperTemperature) := 0; /* datchik verkhney temperatury nagrevatelya */
+  init(SLowerTemperature) := 0; /* datchik nizhney temperatury nagrevatelya */
+  init(SWorkingTemperature) := 0; /* datchik rabochey temperatury nagrevatelya */
+
+  /* Vikhody */
+  /* Ustroystva/Lampy */
+  init(Heater) := 0; /* vklyuchit nagrevatel */
+  init(UpperValveTank1) := 0; /* otkrit podayushiy klapan 1 */
+  init(UpperValveTank2) := 0; /* otkrit podayushiy klapan 2 */
+  init(LowerValveTank1) := 0; /* otkrit nalivnoy klapan 1 */
+  init(LowerValveTank2) := 0; /* otkrit nalivnoy klapan 2 */
+  init(EmergencyValve) := 0; /* otkrit avariyniy klapan */
+  init(PourValve) := 0; /* otkrit razlivnoy klapan */
+  init(ActuatorMixer) := 0; /* zapustit privod meshalki */
+
+  /* Sostoyaniya/Lampy */
+  init(SystemOn) := 0; /* sistema vklyuchena */
+  init(Completion) := 0; /* rezhim plavnogo zaversheniya */
+  init(MixtureFinished) := 0; /* smes prigotovlena */
+  init(MixtureBad) := 0; /* smes isporchena */
+  init(Component1) := 0; /* v smesi yest component 1 */
+  init(Component2) := 0; /* v smesi yest component 2 */
+  init(HeaterError) := 0; /* signal oshibki nagrevatelya */
+  init(MixerError) := 0; /* signal oshibki privoda meshalki */
+
+  /* Lamp */
+  init(LampTank1_0) := 0; /* lampa urovnya 0 baka 1 */
+  init(LampTank1_1) := 0; /* lampa urovnya 1 baka 1 */
+  init(LampTank2_0) := 0; /* lampa urovnya 0 baka 2 */
+  init(LampTank2_1) := 0; /* lampa urovnya 1 baka 2 */
+  init(LampMixer) := 0; /* lampa datchika raboty privoda meshalki */
+  init(LampUpperTemperature) := 0; /* lampa datchika verkhney temperatury nagrevatelya */
+  init(LampLowerTemperature) := 0; /* lampa datchika nizhney temperatury nagrevatelya */
+  init(LampWorkingTemperature) := 0; /* lampa datchika rabochey temperatury nagrevatelya */
+
+  /* Vnutrennie i taimery */
+  init(Final) := 0; /* priznak plavnogo zaversheniya raboty */ 
+  init(IntoTank1) := 0; /* rezhim napolneniya baka 1 */
+  init(IntoTank2) := 0; /* rezhim napolneniya baka 2 */
+  init(FromTank1) := 0; /* rezhim podachi komponenta iz baka 1 */
+  init(FromTank2) := 0; /* rezhim podachi komponenta iz baka 2 */
+
+  /* Sistema perekhodov */
+  /* Knopki Push Buttons */
+  next(PBStart) := {0,1}; /* Knopka Pusk */
+  next(PBStop) := {0,1}; /* Knopka Stop */
+  next(PBCompletion) := {0,1}; /* Knopka Zaversheniye raboty */
+ 
+  /* Knopki-perekluchateli Switch Buttons */
+  next(SBEmergencyValve) := {0,1}; /* Perekluchatel Otkryt' avariyniy klapan */
+
+  /* Datchiki Sensors */
+  next(STank1_0) := {0,1}; /* datchik urovnya 0 baka 1 */
+  next(STank1_1) := {0,1}; /* datchik urovnya 1 baka 1 */
+  next(STank2_0) := {0,1}; /* datchik urovnya 0 baka 2 */
+  next(STank2_1) := {0,1}; /* datchik urovnya 1 baka 2 */
+  next(STank_0) := {0,1}; /* datchik urovnya 0 rezervuara */
+  next(SActuatorMixer) := {0,1}; /* datchik raboty privoda meshalki */
+  next(SUpperTemperature) := {0,1}; /* datchik verkhney temperatury nagrevatelya */
+  next(SLowerTemperature) := {0,1}; /* datchik nizhney temperatury nagrevatelya */
+  next(SWorkingTemperature) := {0,1}; /* datchik rabochey temperatury nagrevatelya */
+
+  /* Vikhody, vnutrenniye peremennie, taimery */
+  /* ------- Taimery ------- */
+  next(MixerTimer.I) := ActuatorMixer & next(SActuatorMixer);
+  next(WaitingMixerTimer.I) := ActuatorMixer & ~next(SActuatorMixer);
+  next(HeaterTimer.I) := Heater & ~next(SWorkingTemperature);
+
+  /* Sostoyaniya/oshibki/lampy */
+  case{ ~MixerError & (next(WaitingMixerTimer.Q) | next(WaitingMixerTimer.I) & SActuatorMixer) : next(MixerError) := 1; /* MixerError+ */
+        MixerError & next(PBStop)                                                              : next(MixerError) := 0; /* MixerError- */
+        default                                                                                : next(MixerError) := MixerError;
+  };
+  case{ ~HeaterError & (next(HeaterTimer.Q) | next(HeaterTimer.I) & SWorkingTemperature) : next(HeaterError) := 1; /* HeaterError+ */
+        HeaterError & next(PBStop)                                                       : next(HeaterError) := 0; /* HeaterError- */
+        default                                                                          : next(HeaterError) := HeaterError;
+  };
+
+  /* Sostoyaniya/lampy */
+  case{ ~Component1 & next(STank_0) & LowerValveTank1 & STank1_0 : next(Component1) := 1; /* Component1+ */
+         Component1 & ~next(STank_0)                             : next(Component1) := 0; /* Component1- */
+         default                                                 : next(Component1) := Component1;
+  };
+  case{ ~Component2 & next(STank_0) & LowerValveTank2 & STank2_0 : next(Component2) := 1; /* Component2+ */
+        Component2 & ~next(STank_0)                              : next(Component2) := 0; /* Component2- */
+        default                                                  : next(Component2) := Component2;
+  };
+  case{ ~MixtureBad & next(STank_0) & EmergencyValve & ~MixtureFinished & Component2 : next(MixtureBad) := 1; /* MixtureBad+ */
+        MixtureBad & ~next(STank_0)                                                  : next(MixtureBad) := 0; /* MixtureBad- */
+        default                                                                      : next(MixtureBad) := MixtureBad;
+  };
+  case{ ~MixtureFinished & next(STank_0) & next(MixerTimer.Q) & ~next(MixtureBad) : next(MixtureFinished) := 1; /* MixtureFinished+ */
+        MixtureFinished & ~next(STank_0)                                          : next(MixtureFinished) := 0;
+        default                                                                   : next(MixtureFinished) := MixtureFinished;
+  };
+
+  /* Vnutrennie peremennie */
+  case{ ~IntoTank1 & ~next(STank1_1) & (next(MixtureBad) | ~next(STank1_0)) : next(IntoTank1) := 1;
+        IntoTank1 & (next(STank1_1))                                        : next(IntoTank1) := 0;
+        default                                                             : next(IntoTank1) := IntoTank1;
+  };
+  case{ ~IntoTank2 & ~next(STank2_1) & (next(MixtureBad) | ~next(STank2_0)) : next(IntoTank2) := 1;
+        IntoTank2 & (next(STank2_1))                                        : next(IntoTank2) := 0;
+        default                                                             : next(IntoTank2) := IntoTank2;
+  };
+  case{ ~FromTank1 & next(STank1_1) & ~next(MixtureBad) & ~next(Component1) : next(FromTank1) := 1;
+        FromTank1 & (~next(STank1_0) | next(MixtureBad))                    : next(FromTank1) := 0;
+        default                                                             : next(FromTank1) := FromTank1;
+  };
+  case{ ~FromTank2 & next(STank2_1) & ~next(MixtureBad) & ~next(Component2) : next(FromTank2) := 1;
+        FromTank2 & (~next(STank2_0) | next(MixtureBad))                    : next(FromTank2) := 0;
+        default                                                             : next(FromTank2) := FromTank2;
+  };
+  next(Final) := next(PBStop) | next(HeaterError) | next(MixerError) | next(SBEmergencyValve) | next(MixtureBad) | (~next(STank_0) & ~next(STank1_0) & ~next(STank2_0) & ~UpperValveTank1 & ~UpperValveTank2 & ~LowerValveTank1 & ~LowerValveTank2 & (next(PBCompletion) | Completion));
+
+  /* Sostoyaniya/lampy */
+  case{ ~SystemOn & next(PBStart) & ~next(Final) : next(SystemOn) := 1; /* SystemOn+ */
+        SystemOn & next(Final)                   : next(SystemOn) := 0; /* SystemOn- */
+        default                                  : next(SystemOn) := SystemOn;
+  };
+  case{ ~Completion & next(SystemOn) & next(PBCompletion) : next(Completion) := 1; /* Completion+ */
+        Completion & ~next(SystemOn)                      : next(Completion) := 0; /* Completion- */
+        default                                           : next(Completion) := Completion;
+  };
+
+  /* Privody/lampy */
+  next(EmergencyValve) := next(SBEmergencyValve);
+  next(UpperValveTank1) := next(SystemOn) & next(IntoTank1) & ~(next(Completion) & ~next(STank1_0) & ~UpperValveTank1 & next(Component1));
+  next(UpperValveTank2) := next(SystemOn) & next(IntoTank2) & ~(next(Completion) & ~next(STank2_0) & ~UpperValveTank2 & next(Component2));
+  next(LowerValveTank1) := next(SystemOn) & next(FromTank1) & next(SWorkingTemperature);
+  next(LowerValveTank2) := next(SystemOn) & next(FromTank2) & next(SWorkingTemperature);
+  next(ActuatorMixer) := next(SystemOn) & ~next(FromTank1) & ~next(FromTank2) & next(Component1) & next(Component2) & ~next(MixtureBad) & ~next(MixtureFinished) & next(SWorkingTemperature);
+  next(PourValve) := next(SystemOn) & next(MixtureFinished);
+
+  /* Nagrevatel/lampa */
+  case{ ~Heater & next(SystemOn) & ~next(SLowerTemperature)  : next(Heater) := 1; /* Heater+ */
+        Heater & (~next(SystemOn) | next(SUpperTemperature)) : next(Heater) := 0; /* Heater- */
+        default                                              : next(Heater) := Heater;
+  };
+
+  /* Lampy */
+  next(LampTank1_0) := next(STank1_0);
+  next(LampTank1_1) := next(STank1_1);
+  next(LampTank2_0) := next(STank2_0);
+  next(LampTank2_1) := next(STank2_1);
+  next(LampMixer) := next(SActuatorMixer);
+  next(LampUpperTemperature) := next(SUpperTemperature);
+  next(LampLowerTemperature) := next(SLowerTemperature);
+  next(LampWorkingTemperature) := next(SWorkingTemperature);
+
+  /* Razdel soglasovannogo povedeniya datchikov */
+  /* Datchiki temperatury nagrevatelya WTS, LTS & UTS */
+  C_WTS_1: assert G( ~X(SWorkingTemperature) -> ~X(SLowerTemperature) & ~X(SUpperTemperature) );
+  C_WTS_2: assert G( ~SWorkingTemperature & X(SWorkingTemperature) -> Heater & ~SLowerTemperature & ~X(SLowerTemperature) & ~SUpperTemperature & ~X(SUpperTemperature) );
+  C_WTS_3: assert G( SWorkingTemperature & ~X(SWorkingTemperature) -> ~SLowerTemperature & ~X(SLowerTemperature) & ~SUpperTemperature & ~X(SUpperTemperature) );
+  C_WTS_4: assert G( G(SWorkingTemperature) -> (F(G(Heater)) | G(~Heater -> F(Heater))) );
+
+  C_LTS_1: assert G( X(SLowerTemperature) -> X(SWorkingTemperature) );
+  C_LTS_2: assert G( ~X(SLowerTemperature) -> ~X(SUpperTemperature) );
+  C_LTS_3: assert G( ~SLowerTemperature & X(SLowerTemperature) -> Heater & SWorkingTemperature & X(SWorkingTemperature) & ~SUpperTemperature & ~X(SUpperTemperature) );
+  C_LTS_4: assert G( SLowerTemperature & ~X(SLowerTemperature) -> SWorkingTemperature & X(SWorkingTemperature) & ~SUpperTemperature & ~X(SUpperTemperature) );
+  C_LTS_5: assert G( G(SLowerTemperature) -> (F(G(Heater)) | G(~Heater -> F(Heater))) );
+
+  C_UTS_1: assert G( X(SUpperTemperature) -> X(SWorkingTemperature) & X(SLowerTemperature) );
+  C_UTS_2: assert G( ~SUpperTemperature & X(SUpperTemperature) -> Heater & SWorkingTemperature & X(SWorkingTemperature) & SLowerTemperature & X(SLowerTemperature) );
+  C_UTS_3: assert G( SUpperTemperature & ~X(SUpperTemperature) -> SWorkingTemperature & X(SWorkingTemperature) & SLowerTemperature & X(SLowerTemperature) );
+  C_UTS_4: assert G( G(SUpperTemperature) -> (F(G(Heater)) | G(~Heater -> F(Heater))) );
+
+  /* Datchik raboty privoda meshalki */
+  C_MS_1: assert G( X(SActuatorMixer) -> ActuatorMixer );
+  C_MS_2: assert G( ~SActuatorMixer & X(SActuatorMixer) -> ActuatorMixer );
+  C_MS_3: assert G( G(SActuatorMixer) -> G(ActuatorMixer) );
+
+  /* Datchiki urovney bakov */
+  C_T10_1: assert G( ~X(STank1_0) -> ~X(STank1_1) & (UpperValveTank1 -> LowerValveTank1) );
+  C_T10_2: assert G( ~STank1_0 & X(STank1_0) -> UpperValveTank1 & ~STank1_1 & ~X(STank1_1) );
+  C_T10_3: assert G( STank1_0 & ~X(STank1_0) -> LowerValveTank1 & ~STank1_1 & ~X(STank1_1) );
+  C_T10_4: assert G( G(STank1_0) -> (F(G(~LowerValveTank1)) | G(LowerValveTank1 -> F(UpperValveTank1))) );
+  C_T10_5: assert G( G(~STank1_0) -> (F(G(~UpperValveTank1)) | G(UpperValveTank1 -> F(LowerValveTank1))) );
+
+  C_T11_1: assert G( X(STank1_1) -> X(STank1_0) );
+  C_T11_2: assert G( ~STank1_1 & X(STank1_1) -> UpperValveTank1 & STank1_0 & X(STank1_0) );
+  C_T11_3: assert G( STank1_1 & ~X(STank1_1) -> LowerValveTank1 & STank1_0 & X(STank1_0) );
+  C_T11_4: assert G( G(STank1_1) -> (F(G(~LowerValveTank1)) | G(LowerValveTank1 -> F(UpperValveTank1))) );
+  C_T11_5: assert G( G(~STank1_1) -> (F(G(~UpperValveTank1)) | G(UpperValveTank1 -> F(LowerValveTank1))) );
+
+  C_T20_1: assert G( ~X(STank2_0) -> ~X(STank2_1) & (UpperValveTank2 -> LowerValveTank2) );
+  C_T20_2: assert G( ~STank2_0 & X(STank2_0) -> UpperValveTank2 & ~STank2_1 & ~X(STank2_1) );
+  C_T20_3: assert G( STank2_0 & ~X(STank2_0) -> LowerValveTank2 & ~STank2_1 & ~X(STank2_1) );
+  C_T20_4: assert G( G(STank2_0) -> (F(G(~LowerValveTank2)) | G(LowerValveTank2 -> F(UpperValveTank2))) );
+  C_T20_5: assert G( G(~STank2_0) -> (F(G(~UpperValveTank2)) | G(UpperValveTank2 -> F(LowerValveTank2))) );
+
+  C_T21_1: assert G( X(STank2_1) -> X(STank2_0) );
+  C_T21_2: assert G( ~STank2_1 & X(STank2_1) -> UpperValveTank2 & STank2_0 & X(STank2_0) );
+  C_T21_3: assert G( STank2_1 & ~X(STank2_1) -> LowerValveTank2 & STank2_0 & X(STank2_0) );
+  C_T21_4: assert G( G(STank2_1) -> (F(G(~LowerValveTank2)) | G(LowerValveTank2 -> F(UpperValveTank2))) );
+  C_T21_5: assert G( G(~STank2_1) -> (F(G(~UpperValveTank2)) | G(UpperValveTank2 -> F(LowerValveTank2))) );
+
+  C_T0_1: assert G( ~X(STank_0) -> (~(LowerValveTank1 & STank1_0) & ~(LowerValveTank2 & STank2_0) | PourValve | EmergencyValve) );
+  C_T0_2: assert G( ~STank_0 & X(STank_0) -> (LowerValveTank1 & STank1_0 | LowerValveTank2 & STank2_0) );
+  C_T0_3: assert G( STank_0 & ~X(STank_0) -> (EmergencyValve | PourValve) );
+  C_T0_4: assert G( G(STank_0) -> (F(G(~EmergencyValve)) & F(G(~PourValve)) | G((EmergencyValve | PourValve) -> (F(LowerValveTank1 & STank1_0) | F(LowerValveTank2 & STank2_0)))) );
+  C_T0_5: assert G( G(~STank_0) -> (F(G(~(LowerValveTank1 & STank1_0) & ~(LowerValveTank2 & STank2_0))) | G((LowerValveTank1 & STank1_0 | LowerValveTank2 & STank2_0) -> F(EmergencyValve | PourValve))) );
+
+  /* Razdel svoystv */
+  /* Svoystva bez ucheta soglasovannogo povedeniya datchikov */
+  P1_Stop: assert G( (PBStop | SBEmergencyValve | MixtureBad | HeaterError | MixerError) -> ~SystemOn );
+  P2_SystemOff: assert G( ~SystemOn -> ~LowerValveTank1 & ~LowerValveTank2 & ~PourValve & ~Heater & ~ActuatorMixer & ~Completion );
+  P3_Valves: assert G( (UpperValveTank1 + LowerValveTank1 <= 1) & (UpperValveTank2 + LowerValveTank2 <= 1) );
+  P4_Reservoir: assert G( (LowerValveTank1 | LowerValveTank2) + (PourValve | EmergencyValve) + ActuatorMixer <= 1 ); 
+  P5_MixCond: assert G( ~(MixtureBad & MixtureFinished) );
+  P6_CompSpend: assert G( (MixtureBad | MixtureFinished) -> ~LowerValveTank1 & ~LowerValveTank2 );
+  P7_MixBad: assert G( MixtureBad -> ~PourValve & ~ActuatorMixer & ~Heater );
+  P8_MixFin: assert G( MixtureFinished -> Component1 & Component2 );
+  P9_Timer_Waiting: assert G( WaitingMixerTimer.Q -> X(~WaitingMixerTimer.Q) );
+  P9_Timer_Mixer: assert G( MixerTimer.Q -> X(~MixerTimer.Q) );
+  P9_Timer_Heater: assert G( HeaterTimer.Q -> X(~HeaterTimer.Q) );
+  P10_ErrReset: assert G( (HeaterError & ~X(HeaterError) | MixerError & ~X(MixerError)) -> X(PBStop) );
+
+  /* Svoystva s uchetom soglasovannogo povedeniya datchikov */
+  P11_SystemOn: assert G( (SystemOn & SWorkingTemperature) -> (LowerValveTank1 | UpperValveTank1 | LowerValveTank2 | UpperValveTank2  | PourValve | ActuatorMixer) );
+  P12_OpenValve_1: assert G( UpperValveTank1 -> F(~UpperValveTank1) );
+  P12_OpenValve_2: assert G( UpperValveTank2 -> F(~UpperValveTank2) );
+  P12_OpenValve_3: assert G( LowerValveTank1 -> F(~LowerValveTank1) );
+  P12_OpenValve_4: assert G( LowerValveTank2 -> F(~LowerValveTank2) );
+  P12_OpenValve_5: assert G( PourValve -> F(~PourValve) );
+  P13_Actuator_1: assert G( ActuatorMixer -> F(~ActuatorMixer) );
+  P13_Actuator_2: assert G( Heater -> (F(~Heater) | G(~SUpperTemperature)));
+  P14_ClosedValve_1: assert G( ~UpperValveTank1 -> F(UpperValveTank1 | ~SystemOn) );
+  P14_ClosedValve_2: assert G( ~UpperValveTank2 -> F(UpperValveTank2 | ~SystemOn) );
+  P14_ClosedValve_3: assert G( ~LowerValveTank1 -> F(LowerValveTank1 | ~SystemOn) );
+  P14_ClosedValve_4: assert G( ~LowerValveTank2 -> F(LowerValveTank2 | ~SystemOn) );
+  P14_ClosedValve_5: assert G( ~PourValve -> F(PourValve | ~SystemOn) );
+  P15_ActuatorOff_1: assert G( ~ActuatorMixer -> F(ActuatorMixer | ~SystemOn) );
+  P15_ActuatorOff_2: assert G( ~Heater -> F(Heater | ~SystemOn) ); 
+  P16_Shutdown: assert G( Completion -> F(~Completion) );
+  P17_Correct: assert G( Completion & X(~Completion) & ~X(PBStop | SBEmergencyValve | HeaterError | MixerError | MixtureBad) -> X(~SystemOn & ~STank1_0 & ~STank2_0 & ~STank_0) );
+  P18_StopUpper_1: assert G( UpperValveTank1 & ~X(UpperValveTank1) -> X(F(LowerValveTank1 | ~SystemOn)) );
+  P18_StopUpper_2: assert G( UpperValveTank2 & ~X(UpperValveTank2) -> X(F(LowerValveTank2 | ~SystemOn)) );
+  P19_StopLower_1_1: assert G( LowerValveTank1 & ~X(LowerValveTank1) -> X((~LowerValveTank1 & ~PourValve)U(ActuatorMixer | ~SystemOn)) );
+  P19_StopLower_1_2: assert G( LowerValveTank1 & ~X(LowerValveTank1) -> X((~LowerValveTank1)U(UpperValveTank1 | ~SystemOn)) );
+  P19_StopLower_2_1: assert G( LowerValveTank2 & ~X(LowerValveTank2) -> X((~LowerValveTank2 & ~PourValve)U(ActuatorMixer | ~SystemOn)) );
+  P19_StopLower_2_2: assert G( LowerValveTank2 & ~X(LowerValveTank2) -> X((~LowerValveTank2)U(UpperValveTank2 | ~SystemOn)) );
+  P20_StopActuator: assert G( ActuatorMixer & ~X(ActuatorMixer) -> (X(PourValve) | X(~SystemOn)) );
+  P21_StopPour_1: assert G( PourValve & X(~PourValve) -> X((~PourValve & ~ActuatorMixer)U(LowerValveTank1 | UpperValveTank1 | ~SystemOn)) );
+  P21_StopPour_2: assert G( PourValve & X(~PourValve) -> X((~PourValve & ~ActuatorMixer)U(LowerValveTank2 | UpperValveTank2 | ~SystemOn)) );
+
+using 
+  C_WTS_1, C_WTS_2, C_WTS_3, C_WTS_4,
+  C_LTS_1, C_LTS_2, C_LTS_3, C_LTS_4, C_LTS_5,
+  C_UTS_1, C_UTS_2, C_UTS_3, C_UTS_4,
+  C_MS_1, C_MS_2, C_MS_3,
+  C_T10_1, C_T10_2, C_T10_3, C_T10_4, C_T10_5,
+  C_T11_1, C_T11_2, C_T11_3, C_T11_4, C_T11_5,
+  C_T20_1, C_T20_2, C_T20_3, C_T20_4, C_T20_5,
+  C_T21_1, C_T21_2, C_T21_3, C_T21_4, C_T21_5,
+  C_T0_1, C_T0_2, C_T0_3, C_T0_4, C_T0_5
+
+prove
+  /* Svoystva s uchetom soglasovannogo povedeniya datchikov */
+  P11_SystemOn,
+  P12_OpenValve_1, P12_OpenValve_2, P12_OpenValve_3, P12_OpenValve_4, P12_OpenValve_5,
+  P13_Actuator_1, P13_Actuator_2,
+  P14_ClosedValve_1, P14_ClosedValve_2, P14_ClosedValve_3, P14_ClosedValve_4, P14_ClosedValve_5,
+  P15_ActuatorOff_1, P15_ActuatorOff_2,
+  P16_Shutdown,
+  P17_Correct,
+  P18_StopUpper_1, P18_StopUpper_2,
+  P19_StopLower_1_1, P19_StopLower_1_2, P19_StopLower_2_1, P19_StopLower_2_2,
+  P20_StopActuator,
+  P21_StopPour_1, P21_StopPour_2;
+}
+
