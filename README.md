@@ -36,7 +36,48 @@
 
 **Задача состоит в написании программы для ПЛК с 13 входами и 24 выходами, предназначенного для управления установкой. Интерфейс ПЛК управления установкой представлен на рис. 1.2.**
 
-<div style="text-align:center"><img alt="Интерфейс ПЛК" src="images/1_2.jpg" width="50%" align="right" vspace="15" hspace="15"></div>
+<div style="text-align:center">
+    <img alt="Интерфейс ПЛК" src="images/1_2.jpg" width="50%" vspace="15" hspace="15">
+</div>
+
+---
+
+# Пример работы установки
+
+## Работа установки
+
+<div style="text-align:center">
+    <img alt="Пример работы ПЛК" src="images/example.gif" width="60%" vspace="15" hspace="15">
+</div>
+
+## Изменение пропускной способности клапана на модели
+
+<div style="text-align:center">
+    <img alt="Изменение пропускной способности клапана" src="images/bandwidth.gif" width="50%" vspace="15" hspace="15">
+</div>
+
+## Поведение при поломке нагревателя
+
+<div style="text-align:center">
+    <img alt="Поломка нагревателя" src="images/bad_heater.gif" width="50%" vspace="15" hspace="15">
+</div>
+
+## Поведение при поломке привода мешалки
+
+<div style="text-align:center">
+    <img alt="Поломка привода мешалки" src="images/bad_mixer.gif" width="50%" vspace="15" hspace="15">
+</div>
+
+## Поведение при порче смеси
+
+<div style="text-align:center">
+    <img alt="Испорченная смесь" src="images/bad_mixture.gif" width="50%" vspace="15" hspace="15">
+</div>
+
+
+---
+
+# Требования к программе
 
 ## Требования к программе ПЛК:
 
